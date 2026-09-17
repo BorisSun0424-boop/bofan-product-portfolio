@@ -20,6 +20,11 @@
   var FADE_IN = 0.28;       /* 完全可见区间半宽（页） */
   var FADE_OUT = 0.88;      /* 完全消失距离（页） */
   var BLUR_MAX = 10;        /* 过渡中的最大模糊（px），与参考站一致 */
+  var ENTER = 0.95;         /* 进场位移 = 视口高 × ENTER：手机从下方滚上来，完全移出视野 */
+  var Y_PANEL = 0.34;       /* 右栏文字位移 = 手机位移 × 该系数（分层视差） */
+  var Y_TITLE = 0.20;       /* 左栏标题位移 = 手机位移 × 该系数 */
+  var Y_HERO = 0.18;        /* 首屏上移 = 视口高 × 该系数 × 进度 */
+  var HOP_OUT = 0.68;       /* 首屏完全消失的进度点（早于场景层，让位给滚入的手机） */
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduceMotion) EASE = 1;
@@ -45,6 +50,11 @@
   var target = 0;     /* 目标位置（连续） */
   var rafId = null;
   var snapTimer = null;
+  var viewH = window.innerHeight;   /* 缓存视口高，位移量由它派生 */
+  window.addEventListener('resize', function () {
+    viewH = window.innerHeight;
+    if (rafId === null) render(progress);   /* 尺寸变了立刻按新位移重排 */
+  });
 
   function clamp(v, min, max) { return v < min ? min : v > max ? max : v; }
   function clamp01(v) { return clamp(v, 0, 1); }
@@ -72,25 +82,31 @@
   }
 
   function render(p) {
-    /* 首屏：淡出 + 轻微上移（视差） */
+    /* 首屏：淡出 + 上移（视差），让整屏感觉在向上流出。
+       淡出比场景层更快（HOP_OUT < FADE_OUT），避免大字压在正在滚入的手机上 */
     if (hero) {
-      var hop = fadeAt(p);
+      var hop = clamp01((HOP_OUT - p) / (HOP_OUT - FADE_IN));
       hero.style.opacity = hop.toFixed(3);
-      hero.style.transform = 'translate3d(0,' + (-p * 36).toFixed(2) + 'px,0)';
+      hero.style.transform = 'translate3d(0,' + (-p * viewH * Y_HERO).toFixed(2) + 'px,0)';
       hero.style.visibility = hop <= 0.002 ? 'hidden' : 'visible';
       hero.style.pointerEvents = hop > 0.85 ? 'auto' : 'none';
     }
 
-    /* 各作品场景：透明度 / 位移 / 过渡模糊都由进度派生 */
+    /* 各作品场景：透明度 / 位移 / 过渡模糊都由进度派生
+       位移方向 —— d = p - i：
+         d > 0（还没滚到）→ 停在视口下方等待进场
+         d  0（正好到达）→ 居中
+         d < 0（已经滚过）→ 继续向上移出视口
+       于是向下滚动时，下一个场景的手机就从下方滚上来，形成连贯的纵向流动 */
     for (var i = 1; i < TOTAL; i++) {
       var d = p - i;
       var ad = Math.abs(d);
       var opacity = fadeAt(d);
-      var y = d * 46;
+      var y = -clamp(d, -1, 1) * viewH * ENTER;
       var blur = ad > 1.2 ? 0 : Math.min(BLUR_MAX, ad * 13);
       applyLayer(layerMap[i], opacity, y, blur, false);
-      applyLayer(panelMap[i], opacity, y * 0.6, blur * 0.7, false);
-      applyLayer(titleMap[i], opacity, y * 0.35, blur * 0.5, true);
+      applyLayer(panelMap[i], opacity, y * Y_PANEL, blur * 0.7, false);
+      applyLayer(titleMap[i], opacity, y * Y_TITLE, blur * 0.5, true);
     }
 
     /* 左栏静止信息（名字 / 刻度）随离开首屏淡入 */
