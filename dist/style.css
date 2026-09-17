@@ -31,7 +31,9 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 /* ---- 左栏 ---- */
 .col-left{display:flex;flex-direction:column;justify-content:space-between;padding-right:24px}
 
-.left-top{opacity:0;transition:opacity 500ms ease;pointer-events:none}
+/* 说明：桌面端场景的透明度/位移/模糊由 script.js 逐帧驱动（连续进度模型），
+   故这些元素不加 CSS transition，避免与逐帧样式叠加导致滞后 */
+.left-top{opacity:0;pointer-events:none;will-change:opacity}
 .left-top.visible{opacity:1;pointer-events:auto}
 .left-top h1{font-size:24px;font-weight:600;color:var(--text-primary);line-height:1.2;margin-bottom:8px;letter-spacing:-0.01em}
 .left-tagline{font-size:14px;color:var(--text-muted);letter-spacing:0.03em;margin-bottom:20px}
@@ -44,7 +46,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .left-mid{flex:1;position:relative}
 .left-title{position:absolute;top:50%;left:0;opacity:0;
   transform:translateY(calc(-50% + 12px));
-  transition:opacity 500ms ease,transform 500ms ease;pointer-events:none}
+  pointer-events:none;backface-visibility:hidden;will-change:opacity,transform,filter}
 .left-title.active{opacity:1;transform:translateY(-50%);pointer-events:auto}
 .left-title p{font-size:30px;font-weight:600;color:var(--text-primary);line-height:1.1;letter-spacing:-0.02em}
 .left-title p + p{color:var(--text-subtle)}
@@ -55,9 +57,8 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .col-center{display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
 
 .layer{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  opacity:0;transform:translateY(18px);
-  transition:opacity 500ms ease,transform 500ms ease;pointer-events:none}
-.layer.active{opacity:1;transform:translateY(0);pointer-events:auto}
+  opacity:0;pointer-events:none;backface-visibility:hidden;will-change:opacity,transform,filter}
+.layer.active{opacity:1;pointer-events:auto}
 
 /* 手机框 */
 .phone{position:relative;height:calc(100dvh - 128px);max-height:720px;aspect-ratio:390 / 844;
@@ -67,9 +68,6 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .phone-screen img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;display:block}
 
 .phone-intro{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#0d0d0d}
-.pi-mark{font-size:11px;letter-spacing:0.32em;color:rgba(255,255,255,0.38);text-transform:uppercase}
-.pi-name{font-size:30px;font-weight:600;color:#f5f4f1;letter-spacing:0.02em}
-.pi-sub{font-size:13px;color:rgba(255,255,255,0.5);letter-spacing:0.18em}
 
 /* 横屏视频卡（地府打工人） */
 .video-card{position:relative;height:calc(100dvh - 200px);max-height:540px;aspect-ratio:16 / 9;
@@ -102,9 +100,8 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .col-right{display:flex;align-items:center;position:relative;overflow:hidden}
 
 .panel{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;
-  opacity:0;transform:translateY(14px);
-  transition:opacity 500ms ease,transform 500ms ease;pointer-events:none}
-.panel.active{opacity:1;transform:translateY(0);pointer-events:auto}
+  opacity:0;pointer-events:none;backface-visibility:hidden;will-change:opacity,transform,filter}
+.panel.active{opacity:1;pointer-events:auto}
 .panel-inner{display:flex;flex-direction:column;gap:28px;padding-left:40px;max-width:260px}
 
 .hook{font-size:16px;font-weight:700;color:var(--text-primary);line-height:1.4}
@@ -130,10 +127,9 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .panel-contact{gap:36px}
 
 /* ---- 首屏 Hero（场景 0）---- */
+/* 透明度与位移由 script.js 的连续进度驱动，默认完全可见（无 JS 时也能看到首屏） */
 .hero{position:absolute;inset:0;z-index:6;background-color:var(--bg);
-  opacity:0;pointer-events:none;transition:opacity 500ms ease;overflow:hidden}
-.desktop-layout.hero-on .hero{opacity:1;pointer-events:auto}
-.desktop-layout.hero-on .desktop-grid{visibility:hidden}
+  opacity:1;overflow:hidden;will-change:opacity,transform}
 
 .hero-top{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;
   justify-content:space-between;padding:30px 40px}
@@ -263,8 +259,9 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
   .desktop-grid{display:block;height:auto;padding:0}
   .col-left,.col-right{display:none}
   .col-center{position:static;display:block;overflow:visible}
-  .layer{position:static!important;opacity:1!important;transform:none!important;
-    pointer-events:auto!important;display:block;margin:48px auto;page-break-after:always;break-after:page}
+  .layer{position:static!important;opacity:1!important;visibility:visible!important;filter:none!important;
+    transform:none!important;pointer-events:auto!important;display:block;margin:48px auto;
+    page-break-after:always;break-after:page}
   .phone{height:700px;max-height:none}
   .video-card{height:400px;max-height:none}
   .ac-print{display:none}
