@@ -157,8 +157,8 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
   transform-origin:left bottom;
   animation:heroNameIn 900ms cubic-bezier(0.22,1,0.36,1) both}
 @keyframes heroNameIn{
-  from{transform:translateY(0.35em) scaleY(1.18);opacity:0}
-  to{transform:translateY(0) scaleY(1.18);opacity:1}
+  from{transform:translateY(0.35em) scaleX(0.9) scaleY(1.42);opacity:0}
+  to{transform:translateY(0) scaleX(0.9) scaleY(1.42);opacity:1}
 }
 /* 逐字母悬停放大（参考 mclaneteitel.com）：以基线为原点向上生长 */
 .hn-ch{display:inline-block;transform-origin:50% 92%;will-change:transform;pointer-events:none}
@@ -181,7 +181,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .m-hero-name{position:absolute;left:-0.02em;bottom:-0.16em;
   font-size:23vw;line-height:1;font-weight:700;letter-spacing:-0.045em;
   color:var(--text-primary);white-space:nowrap;user-select:none;
-  transform:scaleY(1.18);transform-origin:left bottom}
+  transform:scaleX(0.9) scaleY(1.42);transform-origin:left bottom}
 .m-name{font-size:22px;font-weight:600;color:var(--text-primary);line-height:1.1;letter-spacing:-0.01em;margin-bottom:8px}
 .m-tagline{font-size:12px;font-weight:400;color:var(--text-muted);letter-spacing:0.06em;text-transform:uppercase}
 
