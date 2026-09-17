@@ -14,8 +14,9 @@
 
   var TOTAL = 6;            /* 场景数（0 = Hero 首屏，1-5 = 作品与关于） */
   var EASE = 0.085;         /* 每帧插值系数：越小越顺滑、惯性越强 */
-  var WHEEL_FACTOR = 3.4;   /* 滚轮位移 → 页面位移倍率 */
-  var TOUCH_FACTOR = 1.5;   /* 触摸拖动倍率 */
+  var WHEEL_FACTOR = 1.4;   /* 滚轮位移 → 页面位移倍率：越小越要多滚几格才翻页 */
+  var WHEEL_STEP_MAX = 160; /* 单次滚轮事件的位移上限，抑制触控板惯性甩动 */
+  var TOUCH_FACTOR = 1.0;   /* 触摸拖动倍率：拖满一屏 = 翻一页 */
   var SNAP_DELAY = 200;     /* 停止滚动多久后吸附到整页 */
   var FADE_IN = 0.28;       /* 完全可见区间半宽（页） */
   var FADE_OUT = 0.88;      /* 完全消失距离（页） */
@@ -156,7 +157,8 @@
   if (layout) {
     layout.addEventListener('wheel', function (e) {
       e.preventDefault();
-      setTarget(target + (e.deltaY / window.innerHeight) * WHEEL_FACTOR);
+      var dy = clamp(e.deltaY, -WHEEL_STEP_MAX, WHEEL_STEP_MAX);
+      setTarget(target + (dy / window.innerHeight) * WHEEL_FACTOR);
       scheduleSnap();
     }, { passive: false });
   }
