@@ -203,5 +203,69 @@
     });
   }
 
+  /* ---- 首屏大字：逐字母悬停放大（参考 mclaneteitel.com 的 HELLO 交互） ----
+     鼠标靠近哪个字母，哪个字母就基于基线放大；邻近度按高斯衰减，
+     每帧向目标弹性追随（lerp），鼠标离开后全部弹回 1 */
+  (function () {
+    var nameEl = document.querySelector('.hero-name');
+    if (!nameEl || !window.matchMedia('(pointer: fine)').matches) return;
+    var chs = nameEl.querySelectorAll('.hn-ch');
+    var n = chs.length;
+    if (!n) return;
+
+    var cur = [], centers = [], stale = true;
+    for (var i = 0; i < n; i++) { cur.push(1); centers.push(null); }
+
+    var BOOST = 0.55;    /* 悬停峰值的额外放大倍数（1 + BOOST） */
+    var RADIUS = 170;    /* 高斯衰减半径（px）：越大影响范围越宽 */
+    var EASE_CH = 0.16;  /* 每帧追随系数：模拟弹簧的弹性手感 */
+    var raf = null, mx = -1e4, my = -1e4, active = false;
+
+    function measure() {
+      var h = 0;
+      for (var i = 0; i < n; i++) {
+        var r = chs[i].getBoundingClientRect();
+        centers[i] = { x: r.left + r.width / 2, y: r.top + r.height * 0.55 };
+        h = Math.max(h, r.height);
+      }
+      /* 衰减半径跟随字母实际尺寸，避免不同窗口宽度下手感不一致 */
+      if (h > 0) RADIUS = h * 0.58;
+      stale = false;
+    }
+
+    function frame() {
+      var settled = true;
+      var heroVisible = progress < 0.35;
+      for (var i = 0; i < n; i++) {
+        var t = 1;
+        if (heroVisible && active && centers[i]) {
+          var dx = mx - centers[i].x;
+          var dy = (my - centers[i].y) / 1.5;   /* 纵向影响范围收窄 */
+          t = 1 + BOOST * Math.exp(-(dx * dx + dy * dy) / (2 * RADIUS * RADIUS));
+        }
+        cur[i] += (t - cur[i]) * EASE_CH;
+        if (cur[i] < 0.999 || cur[i] > 1.001 || Math.abs(t - cur[i]) > 0.002) settled = false;
+        chs[i].style.transform = 'scale(' + cur[i].toFixed(4) + ')';
+      }
+      raf = (settled && !(heroVisible && active)) ? null : requestAnimationFrame(frame);
+    }
+    function wake() { if (raf === null) raf = requestAnimationFrame(frame); }
+
+    window.addEventListener('mousemove', function (e) {
+      mx = e.clientX; my = e.clientY;
+      if (stale) measure();
+      active = true;
+      wake();
+    }, { passive: true });
+    document.documentElement.addEventListener('mouseleave', function () {
+      mx = my = -1e4; active = false; wake();
+    });
+    window.addEventListener('resize', function () { stale = true; });
+    /* 滚离首屏后字母矩形会随位移变化，回来时重新测量 */
+    var staleCheck = setInterval(function () {
+      if (progress > 0.5) stale = true;
+    }, 400);
+  })();
+
   render(progress);
 })();
