@@ -207,9 +207,10 @@
      鼠标靠近哪个字母，哪个字母就基于基线放大；邻近度按高斯衰减，
      每帧向目标弹性追随（lerp），鼠标离开后全部弹回 1 */
   (function () {
-    var nameEl = document.querySelector('.hero-name');
-    if (!nameEl || !window.matchMedia('(pointer: fine)').matches) return;
-    var chs = nameEl.querySelectorAll('.hn-ch');
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+    /* 桌面端与移动端首屏的大字都拆成了逐字母 span，取到所有字母；
+       当前不可见的那一组（display:none）矩形为 0，自动跳过不参与放大 */
+    var chs = document.querySelectorAll('.hn-ch');
     var n = chs.length;
     if (!n) return;
 
@@ -225,8 +226,9 @@
       var h = 0;
       for (var i = 0; i < n; i++) {
         var r = chs[i].getBoundingClientRect();
+        if (r.width < 1 || r.height < 1) { centers[i] = null; continue; }
         centers[i] = { x: r.left + r.width / 2, y: r.top + r.height * 0.55 };
-        h = Math.max(h, r.height);
+        if (r.height > h) h = r.height;
       }
       /* 衰减半径跟随字母实际尺寸，避免不同窗口宽度下手感不一致 */
       if (h > 0) RADIUS = h * 0.58;
@@ -234,22 +236,24 @@
     }
 
     function frame() {
-      var settled = true;
-      var heroVisible = progress < 0.35;
+      var settled = true, near = false;
       for (var i = 0; i < n; i++) {
         var t = 1;
-        if (heroVisible && active && centers[i]) {
+        if (active && centers[i]) {
           var dx = mx - centers[i].x;
           var dy = (my - centers[i].y) / 1.5;   /* 纵向影响范围收窄 */
           t = 1 + BOOST * Math.exp(-(dx * dx + dy * dy) / (2 * RADIUS * RADIUS));
+          if (t > 1.001) near = true;
         }
         cur[i] += (t - cur[i]) * EASE_CH;
         if (cur[i] < 0.999 || cur[i] > 1.001 || Math.abs(t - cur[i]) > 0.002) settled = false;
         chs[i].style.transform = 'scale(' + cur[i].toFixed(4) + ')';
       }
-      raf = (settled && !(heroVisible && active)) ? null : requestAnimationFrame(frame);
+      /* 鼠标不在字母影响范围内且已落定时停掉循环，避免空转耗电 */
+      raf = (settled && !near) ? null : requestAnimationFrame(frame);
     }
     function wake() { if (raf === null) raf = requestAnimationFrame(frame); }
+    function markStale() { stale = true; }
 
     window.addEventListener('mousemove', function (e) {
       mx = e.clientX; my = e.clientY;
@@ -260,11 +264,11 @@
     document.documentElement.addEventListener('mouseleave', function () {
       mx = my = -1e4; active = false; wake();
     });
-    window.addEventListener('resize', function () { stale = true; });
-    /* 滚离首屏后字母矩形会随位移变化，回来时重新测量 */
-    var staleCheck = setInterval(function () {
-      if (progress > 0.5) stale = true;
-    }, 400);
+    /* 布局变化后矩形失效：窗口尺寸、滚动（移动端分节滚动）、滚离首屏 */
+    window.addEventListener('resize', markStale);
+    window.addEventListener('scroll', markStale, { passive: true });
+    window.addEventListener('wheel', markStale, { passive: true });
+    var staleTimer = setInterval(function () { if (progress > 0.5) stale = true; }, 400);
   })();
 
   render(progress);

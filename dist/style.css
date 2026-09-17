@@ -161,8 +161,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
   to{transform:translateY(0) scaleY(1.18);opacity:1}
 }
 /* 逐字母悬停放大（参考 mclaneteitel.com）：以基线为原点向上生长 */
-.hero-name .hn-ch{display:inline-block;transform-origin:50% 92%;will-change:transform;
-  transition:none;pointer-events:none}
+.hn-ch{display:inline-block;transform-origin:50% 92%;will-change:transform;pointer-events:none}
 
 
 /* ---------- 移动端：scroll-snap 分节 ---------- */
