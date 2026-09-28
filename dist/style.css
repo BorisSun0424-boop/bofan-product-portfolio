@@ -126,6 +126,18 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 
 .panel-contact{gap:36px}
 
+/* 六问证据清单：作品集是证据的集合（竖线 + 圆点，标红两条最值钱） */
+.p-evidence{list-style:none;position:relative;display:flex;flex-direction:column;gap:15px;
+  padding-left:20px;margin:0}
+.p-evidence::before{content:'';position:absolute;left:3px;top:9px;bottom:9px;width:1px;background:#e3e1dc}
+.p-evidence li{position:relative;font-size:12.5px;line-height:1.5;color:var(--body)}
+.p-evidence li::before{content:'';position:absolute;left:-20px;top:7px;width:7px;height:7px;
+  border-radius:50%;background:#c9c6c0}
+.p-evidence li b{display:block;font-size:12px;font-weight:600;color:var(--text-primary);
+  margin-bottom:1px;letter-spacing:0.01em}
+.p-evidence li.hot b{color:#e8452c}
+.p-evidence li.hot::before{background:#e8452c}
+
 /* ---- 首屏 Hero（场景 0）---- */
 /* 透明度与位移由 script.js 的连续进度驱动，默认完全可见（无 JS 时也能看到首屏） */
 .hero{position:absolute;inset:0;z-index:6;background-color:var(--bg);
