@@ -65,7 +65,9 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
   background-color:var(--frame);border-radius:44px;padding:10px;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,0.10)}
 .phone-screen{position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;background-color:#000}
-.phone-screen img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.phone-screen img,.phone-screen video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.phone-screen .hover-demo{cursor:pointer}
+.phone-screen .hover-demo:focus-visible{outline:3px solid rgba(255,255,255,.92);outline-offset:-6px}
 
 .phone-intro{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#0d0d0d}
 

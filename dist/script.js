@@ -72,11 +72,13 @@
         el.style.visibility = 'hidden';
         el.style.opacity = '0';
         el.style.filter = 'none';
+        el.style.pointerEvents = 'none';
       }
       return;
     }
     el.style.visibility = 'visible';
     el.style.opacity = opacity.toFixed(3);
+    el.style.pointerEvents = opacity > 0.6 ? 'auto' : 'none';
     el.style.transform = 'translate3d(0,' +
       (centerOffset ? 'calc(-50% + ' + y.toFixed(2) + 'px)' : y.toFixed(2) + 'px') + ',0)';
     el.style.filter = blur > 0.05 ? 'blur(' + blur.toFixed(2) + 'px)' : 'none';
@@ -220,6 +222,31 @@
       if (section) section.classList.remove('sheet-open');
     });
   }
+
+  /* ---- 桌面端 App 演示：悬停或键盘聚焦时播放，离开后回到首帧 ---- */
+  var hoverVideos = document.querySelectorAll('[data-hover-video]');
+  function playHoverVideo(video) {
+    if (window.matchMedia('(max-width:767px)').matches) return;
+    var request = video.play();
+    if (request && typeof request.catch === 'function') request.catch(function () {});
+  }
+  function resetHoverVideo(video) {
+    video.pause();
+    try { video.currentTime = 0; } catch (_) {}
+  }
+  for (var hv = 0; hv < hoverVideos.length; hv++) {
+    (function (video) {
+      video.addEventListener('mouseenter', function () { playHoverVideo(video); });
+      video.addEventListener('mouseleave', function () { resetHoverVideo(video); });
+      video.addEventListener('focus', function () { playHoverVideo(video); });
+      video.addEventListener('blur', function () { resetHoverVideo(video); });
+    })(hoverVideos[hv]);
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      for (var i = 0; i < hoverVideos.length; i++) resetHoverVideo(hoverVideos[i]);
+    }
+  });
 
   /* ---- 首屏大字：逐字母悬停放大（参考 mclaneteitel.com 的 HELLO 交互） ----
      鼠标靠近哪个字母，哪个字母就基于基线放大；邻近度按高斯衰减，
