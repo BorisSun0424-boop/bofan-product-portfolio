@@ -118,6 +118,9 @@
     /* 刻度激活项跟随最近的整页 */
     var near = Math.round(p);
     for (var k = 0; k < dashes.length; k++) dashes[k].classList.toggle('active', k === near);
+    for (var panelIndex = 1; panelIndex < TOTAL; panelIndex++) {
+      if (panelMap[panelIndex]) panelMap[panelIndex].classList.toggle('is-current', panelIndex === near);
+    }
   }
 
   function tick() {
